@@ -70,6 +70,7 @@ z = 1.0
 x0 = 0
 y0 = 0
 take_off_alt = z0
+landing_alt = 1
 
 
 #    x   y   z  time
@@ -109,11 +110,11 @@ def take_off(cf, take_off_alt):
         time.sleep(sleep_time)
 
 
-def land(cf, take_off_alt):
+def land(cf, landing_alt):
     landing_time = 3.0
     sleep_time = 0.1
     steps = int(landing_time / sleep_time)
-    vz = -take_off_alt / landing_time
+    vz = -landing_alt / landing_time
 
     print(vz)
 
@@ -134,11 +135,11 @@ def run_sequence(scf):
         take_off(cf, take_off_alt)
 
         #print('Setting position {}'.format(position))
-        end_time = time.time() + 5
+        end_time = time.time() + 8
         while time.time() < end_time:
-            cf.commander.send_zdistance_setpoint(0, 0, 0, -14)
+            cf.commander.send_zdistance_setpoint(0, 0, 0, -15)
             time.sleep(0.1)
-        land(cf, take_off_alt)
+        land(cf, landing_alt)
     except Exception as e:
         print(e)
 
@@ -146,8 +147,7 @@ def log_pos_callback(timestamp, data, logconf):
     data_array.append(data['stateEstimate.z'])
     print(data['stateEstimate.z'])
     global position_estimate
-    position_estimate[0] = data['stateEstimate.x']
-    position_estimate[1] = data['stateEstimate.y']
+
 
 if __name__ == '__main__':
     # logging.basicConfig(level=logging.DEBUG)
@@ -157,14 +157,11 @@ if __name__ == '__main__':
     with SyncCrazyflie(URI, cf=Crazyflie(rw_cache='./cache')) as scf:
 
         logconf = LogConfig(name='Position', period_in_ms=10)
-        logconf.add_variable('stateEstimate.x', 'float')
-        logconf.add_variable('stateEstimate.y', 'float')
         logconf.add_variable('stateEstimate.z', 'float')
 
         scf.cf.log.add_config(logconf)
         logconf.data_received_cb.add_callback(log_pos_callback)
 
-        print('Waiting for parameters to be downloaded...')
         logconf.start()
         run_sequence(scf)
         logconf.stop()
