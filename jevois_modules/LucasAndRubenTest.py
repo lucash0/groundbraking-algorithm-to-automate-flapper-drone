@@ -75,7 +75,7 @@ class LucasAndRubenTest:
                 cv2.circle(gray, (a, b), 1, (0, 0, 255), 3)
         outimg = gray
         if False:
-            cv2.imwrite('/jevois/data/{}/img{}.png'.format(self.dir, time.time()), outimg)
+            cv2.imwrite(f'/jevois/data/{self.dir}/img{self.frame}.png', outimg)
 
         # Write frames/s info from our timer into the edge map (NOTE: does not account for output conversion time):
         fps = self.timer.stop()
