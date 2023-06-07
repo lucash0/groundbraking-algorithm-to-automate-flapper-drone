@@ -89,6 +89,7 @@ class LucasAndRubenTest:
     # ###################################################################################################
     ## Process function without USB output
     def processNoUSB(self, inframe):
-        img = inframe.getCvGRAY()
-        cv2.imwrite(f'/jevois/data/{self.dir}/img{self.frame}.png', img)
+        img = inframe.getCvBGR()
+        cv2.imwrite(f'/jevois/data/{self.dir}/noUSB{self.frame}.png', img)
         self.frame += 1
+
