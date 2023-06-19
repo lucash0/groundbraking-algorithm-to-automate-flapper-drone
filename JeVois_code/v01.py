@@ -6,6 +6,7 @@ import os
 
 class Test_v1:
     def __init__(self, save_img):
+        # Keep this code the same
         try:
             import libjevois as jevois
             self.timer = jevois.Timer("processing timer", 100, jevois.LOG_INFO)
@@ -33,12 +34,14 @@ class Test_v1:
                 folder_number += 1
 
     def process(self, inframe, outframe, cinframe):
+        # Keep this code
         if self.on_jevois:
             bgr = inframe.getCvBGR()
             self.timer.start()
         else:
             bgr = cinframe
-
+        # ADD CODE FROM HERE
+        # ---------------------------------------------
 
         # Convert the image to YUV color space
         yuv = cv2.cvtColor(bgr, cv2.COLOR_BGR2YUV)
@@ -77,7 +80,8 @@ class Test_v1:
 
 
 
-
+        # Keep code from here
+        # --------------------------------------------------
         if self.on_jevois:
             if self.output_dir is None:
                 self.create_output_dir()
@@ -94,12 +98,14 @@ class Test_v1:
             return output_image, [1, 1, 1]
 
     def processNoUSB(self, inframe, outframe, cinframe):
+        # Keep this code
         if self.on_jevois:
             bgr = inframe.getCvBGR()
             self.timer.start()
         else:
             bgr = cinframe
-
+        # Add code from here
+        # --------------------------------------------------
 
 
         # Convert the image to YUV color space
@@ -136,7 +142,8 @@ class Test_v1:
 
 
 
-
+        # Keep code from here
+        # ----------------------------------------------------------
         if not self.on_jevois:
             return output_image, [1, 1, 1]
         else:
