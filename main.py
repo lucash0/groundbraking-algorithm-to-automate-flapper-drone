@@ -10,6 +10,9 @@ import os
 
 if __name__ == "__main__":
 
-    daq = Daq_tool(Test_v1)
+    test_data_folder = 'Test_Data\\test6\\'
+
+
+    daq = Daq_tool(Test_v1, test_data_folder)
     daq.run_tool()
 

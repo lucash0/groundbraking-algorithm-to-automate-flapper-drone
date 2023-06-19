@@ -16,6 +16,9 @@ class Test_v1:
         self.frame = 0
         self.output_dir = None
         self.save_img = save_img
+        self.parameters = ['', '']
+        self.width = 320
+        self.height = 240
 
     def create_output_dir(self):
         base_dir = 'data'
@@ -75,14 +78,20 @@ class Test_v1:
                 cY = int(M["m01"] / M["m00"])
                 # Draw a dot at the centroid
                 cv2.circle(output_image, (cX, cY), 3, (0, 0, 255), -1)
+            if x < self.width // 2:
+                self.parameters[0] = 'go left'
+            else:
+                self.parameters[0] = 'go right'
 
-
-
-
-
+            if y < self.height // 2:
+                self.parameters[1] = 'go down'
+            else:
+                self.parameters[1] = 'go up'
         # Keep code from here
         # --------------------------------------------------
         if self.on_jevois:
+            jevois.sendSerial("Parameters frame {} - {}".format(self.parameters[0], self.parameters[1]));
+
             if self.output_dir is None:
                 self.create_output_dir()
 
@@ -95,7 +104,9 @@ class Test_v1:
             cv2.putText(output_image, fps, (3, height - 6), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255))
             outframe.sendCv(output_image)
         else:
-            return output_image, [1, 1, 1]
+            return output_image, self.parameters
+
+
 
     def processNoUSB(self, inframe, outframe, cinframe):
         # Keep this code
@@ -145,8 +156,10 @@ class Test_v1:
         # Keep code from here
         # ----------------------------------------------------------
         if not self.on_jevois:
-            return output_image, [1, 1, 1]
+            return output_image, self.parameters
         else:
+            jevois.sendSerial("Parameters frame {} - {}".format(self.parameters[0], self.parameters[1]));
+
             if self.output_dir is None:
                 self.create_output_dir()
             # Save the processed image

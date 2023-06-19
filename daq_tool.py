@@ -4,17 +4,18 @@ import glob
 import os
 
 class Daq_tool:
-    def __init__(self, class_object):
+    def __init__(self, class_object, test_data_folder):
         self.class_object = class_object
+        self.test_data_folder = test_data_folder
+
 
     def run_tool(self):
         self.process_images()
         self.user_input()
 
-
     def process_images(self):
         # Directory containing the images
-        image_dir = 'Test_Data\\test6\\'
+        image_dir = self.test_data_folder
 
         # Retrieve all PNG files in the directory
         image_files = glob.glob(os.path.join(image_dir, '*.png'))
@@ -31,12 +32,12 @@ class Daq_tool:
         JeVois = self.class_object(True)
 
         # Process and store each image along with its parameters
-        for image_file in image_files:
+        for i, image_file in enumerate(image_files):
             # Load the image
             loaded_image = cv2.imread(image_file)
 
             # Process the image using JeVois and retrieve the parameters
-            processed_image, parameters = JeVois.process(1, 1, loaded_image)
+            processed_image, parameters = JeVois.process(i + 1, len(image_files), loaded_image)
 
             # Store the processed image and its parameters
             self.processed_images.append(processed_image)
@@ -64,14 +65,18 @@ class Daq_tool:
     def display_images(self, images, parameters, delay, save_video=False):
         frame_count = 0
         out = None
-        for img, params in zip(images, parameters):
+        for i, img in enumerate(images):
+            # Retrieve the parameters for the current frame
+            params = parameters[i]
+
             # Create a blank white image with the same height as the input image
             params_img = 255 * np.ones((img.shape[0], 300, 3), dtype=np.uint8)
 
             # Add the parameters as text to the params_img
-            for i, param in enumerate(params):
-                text = f'Parameter {i+1}: {param}'
-                cv2.putText(params_img, text, (10, (i+1)*20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1, cv2.LINE_AA)
+            for j, param in enumerate(params):
+                text = f'Parameter {j + 1}: {param}'
+                cv2.putText(params_img, text, (10, (j + 1) * 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1,
+                            cv2.LINE_AA)
 
             # Concatenate the input image and params_img horizontally
             display_img = np.concatenate((img, params_img), axis=1)
@@ -95,7 +100,8 @@ class Daq_tool:
             if save_video:
                 if frame_count == 0:
                     # Create a VideoWriter object
-                    out = cv2.VideoWriter('output_video.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 30, (display_img.shape[1], display_img.shape[0]))
+                    out = cv2.VideoWriter('output_video.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 30,
+                                          (display_img.shape[1], display_img.shape[0]))
 
                 # Write the frame to the video file
                 out.write(display_img)
