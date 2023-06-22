@@ -5,9 +5,10 @@ import string
 import os
 
 class Test_v1:
-    def __init__(self, save_img):
+    def __init__(self):
         # Keep this code the same
         try:
+            import libjevois as jevois
             import libjevois as jevois
             self.timer = jevois.Timer("processing timer", 100, jevois.LOG_INFO)
             self.on_jevois = True
@@ -15,7 +16,6 @@ class Test_v1:
             self.on_jevois = False
         self.frame = 0
         self.output_dir = None
-        self.save_img = save_img
         self.parameters = ['', '']
         self.width = 320
         self.height = 240
@@ -36,7 +36,7 @@ class Test_v1:
             else:
                 folder_number += 1
 
-    def process(self, inframe, outframe, cinframe):
+    def process(self, inframe, outframe, cinframe='None'):
         # Keep this code
         if self.on_jevois:
             bgr = inframe.getCvBGR()
@@ -84,9 +84,9 @@ class Test_v1:
                 self.parameters[0] = 'go right'
 
             if y < self.height // 2:
-                self.parameters[1] = 'go down'
-            else:
                 self.parameters[1] = 'go up'
+            else:
+                self.parameters[1] = 'go down'
         # Keep code from here
         # --------------------------------------------------
         if self.on_jevois:
@@ -108,7 +108,7 @@ class Test_v1:
 
 
 
-    def processNoUSB(self, inframe, outframe, cinframe):
+    def processNoUSB(self, inframe, outframe, cinframe='None'):
         # Keep this code
         if self.on_jevois:
             bgr = inframe.getCvBGR()

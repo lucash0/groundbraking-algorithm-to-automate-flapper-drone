@@ -38,10 +38,9 @@ class Daq_tool:
 
             # Process the image using JeVois and retrieve the parameters
             processed_image, parameters = JeVois.process(i + 1, len(image_files), loaded_image)
-
             # Store the processed image and its parameters
             self.processed_images.append(processed_image)
-            self.processed_parameters.append(parameters)
+            self.processed_parameters.append(parameters.copy())
 
     def user_input(self):
         # Prompt for user input
