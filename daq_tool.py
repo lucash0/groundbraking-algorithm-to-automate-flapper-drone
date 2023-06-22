@@ -29,8 +29,8 @@ class Daq_tool:
         self.processed_parameters = []
 
         # Create an instance of the JeVois class
-        JeVois = self.class_object(True)
-
+        JeVois = self.class_object()
+        print(image_files)
         # Process and store each image along with its parameters
         for i, image_file in enumerate(image_files):
             # Load the image
