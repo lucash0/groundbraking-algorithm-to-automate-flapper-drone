@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from random import randrange
 import os
-import libjevois as jevois
+# import libjevois as jevois
 
 
 class TestModule:
@@ -19,6 +19,8 @@ class TestModule:
         self.parameters = ['', '']
         self.width = 320
         self.height = 240
+        self.last_centroid = [0, 0]
+        self.cooldown = 0
 
     def create_output_dir(self):
         base_dir = 'data'
@@ -198,6 +200,9 @@ class TestModule:
         sigmaL = 60
         sigma2 = 60
 
+        x = 0
+        y = 0
+
         detectedGates = []
         for i in range(0, max_samples):
             x0 = randrange(2, w - 3)
@@ -220,9 +225,31 @@ class TestModule:
                         box = cv2.boxPoints(rect)
                         box = np.int0(box)
                         cv2.polylines(bgr, [np.array(detectedGate)], isClosed=True, color=(255, 0, 0), thickness=2)
+                        x = round((P1[0] + P2[0] + P3[0] + P4[0]) / 4)
+                        y = round((P1[1] + P2[1] + P3[1] + P4[1]) / 4)
 
                         cv2.drawContours(bgr, [box], 0, (0, 255, 0), 2)
                         break
+        if abs(x - self.last_centroid[0]) < 30 and abs(y - self.last_centroid[1]) < 30:
+            self.last_centroid = (x, y)
+
+        else:
+            if self.cooldown == 0:
+                self.cooldown == 2
+                self.last_centroid = (x, y)
+            self.cooldown += -1
+        cv2.circle(bgr, self.last_centroid, radius=2, color=(255, 255, 255), thickness=-1)
+        if x < self.width // 2:
+            self.parameters[0] = 'go left'
+        else:
+            self.parameters[0] = 'go right'
+
+        if y < self.height // 2:
+            self.parameters[1] = 'go up'
+        else:
+            self.parameters[1] = 'go down'
+
+
 
         output_image = bgr.copy()
         # Keep code from here

@@ -18,6 +18,8 @@ class Test_v1:
         self.parameters = ['', '']
         self.width = 320
         self.height = 240
+        self.last_centroid = [0, 0]
+        self.cooldown = 0
 
     def create_output_dir(self):
         base_dir = 'data'
@@ -135,7 +137,7 @@ class Test_v1:
             PN = Pr
         return PN
 
-    def process(self, inframe, outframe):
+    def process(self, inframe, outframe, cinframe='None'):
         # Keep this code
         if self.on_jevois:
             bgr = inframe.getCvBGR()
@@ -153,6 +155,9 @@ class Test_v1:
         # Define the lower and upper bounds of the orange color in YUV
         max_samples = 8000
         sigmaL = 60
+
+        x = 0
+        y = 0
 
         detectedGates = []
         for i in range(0, max_samples):
@@ -178,7 +183,35 @@ class Test_v1:
                         detectedGates.append(detectedGate)
                         # Draw the detected gate on the image
                         cv2.polylines(bgr, [np.array(detectedGate)], isClosed=True, color=(0, 255, 0), thickness=2)
+
+                        x = round((P1[0] + P2[0] + P3[0] + P4[0]) / 4)
+                        y = round((P1[1] + P2[1] + P3[1] + P4[1]) / 4)
+
+
+
+
+
                         break
+
+        if abs(x - self.last_centroid[0]) < 30 and abs(y - self.last_centroid[1]) < 30:
+            self.last_centroid = (x, y)
+            self.cooldown += -1
+        else:
+            if self.cooldown == 0:
+                self.cooldown == 2
+                self.last_centroid = (x, y)
+        cv2.circle(bgr, self.last_centroid, radius=2, color=(255, 255, 255), thickness=-1)
+        if x < self.width // 2:
+            self.parameters[0] = 'go left'
+        else:
+            self.parameters[0] = 'go right'
+
+        if y < self.height // 2:
+            self.parameters[1] = 'go up'
+        else:
+            self.parameters[1] = 'go down'
+
+
 
         output_image = bgr.copy()
         # Keep code from here
@@ -202,7 +235,7 @@ class Test_v1:
 
 
 
-    def processNoUSB(self, inframe, outframe, cinframe):
+    def processNoUSB(self, inframe, outframe, cinframe='None'):
         # Keep this code
         if self.on_jevois:
             bgr = inframe.getCvBGR()
