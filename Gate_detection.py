@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from random import randrange
 import math
 
+
 class Test_v1:
     def __init__(self):
         self.output_dir = 'images_processed'
@@ -19,6 +20,14 @@ class Test_v1:
         upper_orange = np.array([255, 140, 255])  # Adjusted upper bound of orange color in YUV
         if np.all(colour >= lower_orange) and np.all(colour <= upper_orange):
             return True
+
+    def dist(self, P1, P2):
+        x1, y1 = P1
+        x2, y2 = P2
+        dx = abs(x1-x2)
+        dy = abs(y1-y2)
+        distance = math.sqrt(dx**2 + dy**2)
+        return distance
 
     def searchUpDown(self, P0, yuv):
         x0 = P0[0]
@@ -39,6 +48,8 @@ class Test_v1:
                 x1 = x1 + 1
             else:
                 done = True
+            if y1 == 0:
+                done = True
         done = False
         while done == False:
             if self.isTargetColour(yuv[y2 + 1, x2]):
@@ -50,6 +61,8 @@ class Test_v1:
                 y2 = y2 + 1
                 x2 = x2 + 1
             else:
+                done = True
+            if y2 == 239:
                 done = True
         P1 = (x1, y1)
         P2 = (x2, y2)
@@ -74,8 +87,12 @@ class Test_v1:
                 xl = xl - 1
             else:
                 done = True
+            if yl == 239:
+                done = True
         done = False
         while done == False:
+            if yr == 239:
+                done = True
             if self.isTargetColour(yuv[yr, xr + 1]):
                 xr = xr + 1
             elif self.isTargetColour(yuv[yr - 1, xr + 1]):
@@ -86,10 +103,13 @@ class Test_v1:
                 xr = xr + 1
             else:
                 done = True
+            if yr == 239:
+                done = True
+
         Pl = (xl, yl)
         Pr = (xr, yr)
-        dist_Pl = math.dist(P0, Pl)
-        dist_Pr = math.dist(P0, Pr)
+        dist_Pl = self.dist(P0, Pl)
+        dist_Pr = self.dist(P0, Pr)
         if dist_Pl > dist_Pr:
             PN = Pl
         else:
@@ -106,32 +126,33 @@ class Test_v1:
         h, w, d, = yuv.shape
 
         # Define the lower and upper bounds of the orange color in YUV
-        max_samples = 1000
+        max_samples = 8000
         sigmaL = 60
 
         detectedGates = []
         for i in range(0, max_samples):
             # print(i)
             x0 = randrange(2, w - 3)
-            y0 = randrange(4, h - 2)
+            y0 = randrange(4, h - 3)
             P0 = (x0, y0)
             colour0 = yuv[y0, x0]
             if self.isTargetColour(yuv[y0, x0]):
                 # highlighted_image[y0, x0] = highlight_color
                 P1, P2 = self.searchUpDown(P0, yuv)[:2]
                 # print('P1:',P1,'P2:',P2)
-                if math.dist(P1, P2) > sigmaL:
+                if self.dist(P1, P2) > sigmaL:
                     P3 = self.searchLeftRight(P1, yuv)
                     # print('P3:',P3)
                     P4 = self.searchLeftRight(P2, yuv)
                     # print('P4:',P4)
-                    if math.dist(P1, P3) > sigmaL and math.dist(P2,P4) > sigmaL:  # change and to or when addding refinement filter
+                    if self.dist(P1, P3) > sigmaL and self.dist(P2,P4) > sigmaL:  # change and to or when addding refinement filter
                         detectedGate = [P1, P2, P4, P3]
                         #print('P1:', P1, 'P2:', P2)
                         #print('P3:', P3, 'P4:', P4)
                         detectedGates.append(detectedGate)
                         # Draw the detected gate on the image
                         cv2.polylines(bgr, [np.array(detectedGate)], isClosed=True, color=(0, 255, 0), thickness=2)
+                        break
 
         # Save the processed image
         self.create_output_dir()
@@ -139,6 +160,8 @@ class Test_v1:
         cv2.imwrite(output_path, bgr)
         print(output_path)
         self.frame += 1
+        if self.frame == 545:
+            return
 
 
     def process_images_in_folder(self, folder_path):

@@ -132,9 +132,51 @@ class TestModule:
         dist_Pr = self.dist(P0, Pr)
         if dist_Pl > dist_Pr:
             PN = Pl
+            Left = True
         else:
             PN = Pr
-        return PN
+            Left = False
+        return PN, Left
+
+    def searchRight(self, P0, yuv):
+        xr, yr = P0
+        done = False
+        while done == False:
+            if yr >= self.height - 1 or xr >= self.width - 3:
+                done = True
+                break
+            if self.isTargetColour(yuv[yr, xr + 3]):
+                xr = xr + 3
+            elif self.isTargetColour(yuv[yr - 1, xr + 3]):
+                yr = yr - 1
+                xr = xr + 3
+            elif self.isTargetColour(yuv[yr + 1, xr + 3]):
+                yr = yr + 1
+                xr = xr + 3
+            else:
+                done = True
+        Pr = (xr, yr)
+        return Pr
+
+    def searchLeft(self, P0, yuv):
+        xl, yl = P0
+        done = False
+        while done == False:
+            if yl >= self.height - 1 or xl <= 0:
+                done = True
+                break
+            if self.isTargetColour(yuv[yl, xl - 3]):
+                xl = xl - 3
+            elif self.isTargetColour(yuv[yl - 1, xl - 3]):
+                yl = yl - 1
+                xl = xl - 3
+            elif self.isTargetColour(yuv[yl + 1, xl - 3]):
+                yl = yl + 1
+                xl = xl - 3
+            else:
+                done = True
+        Pl = (xl, yl)
+        return Pl
 
     def process(self, inframe, outframe, cinframe = 'None'):
         # Keep this code
@@ -158,25 +200,20 @@ class TestModule:
 
         detectedGates = []
         for i in range(0, max_samples):
-            # print(i)
             x0 = randrange(2, w - 3)
             y0 = randrange(80, h - 80)
             P0 = (x0, y0)
-            colour0 = yuv[y0, x0]
             if self.isTargetColour(yuv[y0, x0]):
-                # highlighted_image[y0, x0] = highlight_color
                 P1, P2 = self.searchUpDown(P0, yuv)[:2]
-                # print('P1:',P1,'P2:',P2)
                 if self.dist(P1, P2) > sigmaL:
-                    P3 = self.searchLeftRight(P1, yuv)
-                    # print('P3:',P3)
-                    P4 = self.searchLeftRight(P2, yuv)
-                    # print('P4:',P4)
-                    if self.dist(P1, P3) > sigma2 and self.dist(P2,
-                                                                P4) > sigma2:  # change and to or when addding refinement filter
+                    P3, P3left = self.searchLeftRight(P1, yuv)
+                    if P3left:
+                        P4 = self.searchLeft(P2, yuv)
+                    if not P3left:
+                        P4 = self.searchRight(P2, yuv)
+                    if (self.dist(P1, P3) > sigmaL and self.dist(P2, P4) > sigma2) or (
+                            self.dist(P1, P3) > sigma2 and self.dist(P2, P4) > sigmaL):
                         detectedGate = [P1, P2, P4, P3]
-                        # print('P1:', P1, 'P2:', P2)
-                        # print('P3:', P3, 'P4:', P4)
                         detectedGates.append(detectedGate)
                         # Draw the detected gate on the image
                         rect = cv2.minAreaRect(np.array(detectedGate))
