@@ -136,7 +136,7 @@ class TestModule:
             PN = Pr
         return PN
 
-    def process(self, inframe, outframe):
+    def process(self, inframe, outframe, cinframe = 'None'):
         # Keep this code
         if self.on_jevois:
             bgr = inframe.getCvBGR()
