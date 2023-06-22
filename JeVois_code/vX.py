@@ -1,10 +1,10 @@
 import cv2
 import numpy as np
 from random import randrange
-import math
 import os
+import libjevois as jevois
 
-class Test_v1:
+class TestModule:
     def __init__(self):
         # Keep this code the same
         try:
@@ -36,11 +36,7 @@ class Test_v1:
                 folder_number += 1
 
     def dist(self, P1, P2):
-        x1, y1 = P1
-        x2, y2 = P2
-        dx = abs(x1-x2)
-        dy = abs(y1-y2)
-        distance = math.sqrt(dx**2 + dy**2)
+        distance = cv2.norm(P1, P2)
         return distance
 
     def isTargetColour(self, colour):
@@ -72,6 +68,8 @@ class Test_v1:
                 done = True
         done = False
         while done == False:
+            if y2 == self.height - 1:
+                done = True
             if self.isTargetColour(yuv[y2 + 1, x2]):
                 y2 = y2 + 1
             elif self.isTargetColour(yuv[y2 + 1, x2 - 1]):
@@ -82,7 +80,7 @@ class Test_v1:
                 x2 = x2 + 1
             else:
                 done = True
-            if y2 == 239:
+            if y2 == self.height - 1 :
                 done = True
         P1 = (x1, y1)
         P2 = (x2, y2)
@@ -97,6 +95,9 @@ class Test_v1:
         yr = y0
         done = False
         while done == False:
+            if yl == self.height - 1 or xl == 0:
+                done = True
+                break
             if self.isTargetColour(yuv[yl, xl - 1]):
                 xl = xl - 1
             elif self.isTargetColour(yuv[yl - 1, xl - 1]):
@@ -107,12 +108,11 @@ class Test_v1:
                 xl = xl - 1
             else:
                 done = True
-            if yl == 239:
-                done = True
         done = False
         while done == False:
-            if yr == 239:
+            if yr >= self.height - 1 or xr >= self.width -1:
                 done = True
+                break
             if self.isTargetColour(yuv[yr, xr + 1]):
                 xr = xr + 1
             elif self.isTargetColour(yuv[yr - 1, xr + 1]):
@@ -122,8 +122,6 @@ class Test_v1:
                 yr = yr + 1
                 xr = xr + 1
             else:
-                done = True
-            if yr == 239:
                 done = True
         Pl = (xl, yl)
         Pr = (xr, yr)
@@ -151,7 +149,7 @@ class Test_v1:
         h, w, d, = yuv.shape
 
         # Define the lower and upper bounds of the orange color in YUV
-        max_samples = 8000
+        max_samples = 200
         sigmaL = 60
 
         detectedGates = []
