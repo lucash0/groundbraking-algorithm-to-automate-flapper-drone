@@ -35,8 +35,8 @@ class Daq_tool:
             # Load the image
             loaded_image = cv2.imread(image_file)
             print(i, len(image_files))
-            if i == 300:
-                break
+            # if i == 300:
+            #     break
             # Process the image using JeVois and retrieve the parameters
             processed_image, parameters = JeVois.process(i + 1, len(image_files), loaded_image)
             # Store the processed image and its parameters
@@ -55,16 +55,18 @@ class Daq_tool:
             self.display_images(self.processed_images, self.processed_parameters, 0)
         elif choice == 'v':
             # Display the images as a video with 30fps
-            self.display_images(self.processed_images, self.processed_parameters, int(1000 / 30))
+            self.display_images(self.processed_images, self.processed_parameters, int(1000 / 15))
         elif choice == 's':
             # Save the video
-            self.display_images(self.processed_images, self.processed_parameters, int(1000 / 30), save_video=True)
+            self.display_images(self.processed_images, self.processed_parameters, int(1000 / 15), save_video=True)
         else:
             print("Invalid choice")
 
-    def display_images(self, images, parameters, delay, save_video=False):
+    def display_images(self, images, parameters, fps, save_video=False):
         frame_count = 0
         out = None
+        delay = int(1000 / fps)  # Calculate the delay based on the desired FPS
+
         for i, img in enumerate(images):
             # Retrieve the parameters for the current frame
             params = parameters[i]
@@ -100,7 +102,7 @@ class Daq_tool:
             if save_video:
                 if frame_count == 0:
                     # Create a VideoWriter object
-                    out = cv2.VideoWriter('output_video.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 30,
+                    out = cv2.VideoWriter('output_video.mp4', cv2.VideoWriter_fourcc(*'mp4v'), fps,
                                           (display_img.shape[1], display_img.shape[0]))
 
                 # Write the frame to the video file
