@@ -2,7 +2,8 @@ import cv2
 import numpy as np
 from random import randrange
 import os
-import libjevois as jevois
+# import libjevois as jevois
+
 
 class TestModule:
     def __init__(self):
@@ -54,33 +55,35 @@ class TestModule:
         y2 = y0
         done = False
         while done == False:
-            if self.isTargetColour(yuv[y1 - 1, x1]):
-                y1 = y1 - 1
-            elif self.isTargetColour(yuv[y1 - 1, x1 - 1]):
-                y1 = y1 - 1
+            if self.isTargetColour(yuv[y1 - 3, x1]):
+                y1 = y1 - 3
+            elif self.isTargetColour(yuv[y1 - 3, x1 - 1]):
+                y1 = y1 - 3
                 x1 = x1 - 1
-            elif self.isTargetColour(yuv[y1 - 1, x1 + 1]):
-                y1 = y1 - 1
+            elif self.isTargetColour(yuv[y1 - 3, x1 + 1]):
+                y1 = y1 - 3
                 x1 = x1 + 1
             else:
                 done = True
-            if y1 == 0:
+            if y1 <= 0:
                 done = True
+                break
         done = False
         while done == False:
-            if y2 == self.height - 1:
+            if y2 >= self.height - 3:
                 done = True
-            if self.isTargetColour(yuv[y2 + 1, x2]):
-                y2 = y2 + 1
-            elif self.isTargetColour(yuv[y2 + 1, x2 - 1]):
-                y2 = y2 + 1
+                break
+            if self.isTargetColour(yuv[y2 + 3, x2]):
+                y2 = y2 + 3
+            elif self.isTargetColour(yuv[y2 + 3, x2 - 1]):
+                y2 = y2 + 3
                 x2 = x2 - 1
-            elif self.isTargetColour(yuv[y2 + 1, x2 + 1]):
-                y2 = y2 + 1
+            elif self.isTargetColour(yuv[y2 + 3, x2 + 1]):
+                y2 = y2 + 3
                 x2 = x2 + 1
             else:
                 done = True
-            if y2 == self.height - 1 :
+            if y2 == self.height - 3:
                 done = True
         P1 = (x1, y1)
         P2 = (x2, y2)
@@ -95,32 +98,32 @@ class TestModule:
         yr = y0
         done = False
         while done == False:
-            if yl == self.height - 1 or xl == 0:
+            if yl >= self.height - 1 or xl <= 0:
                 done = True
                 break
-            if self.isTargetColour(yuv[yl, xl - 1]):
-                xl = xl - 1
-            elif self.isTargetColour(yuv[yl - 1, xl - 1]):
+            if self.isTargetColour(yuv[yl, xl - 3]):
+                xl = xl - 3
+            elif self.isTargetColour(yuv[yl - 1, xl - 3]):
                 yl = yl - 1
-                xl = xl - 1
-            elif self.isTargetColour(yuv[yl + 1, xl - 1]):
+                xl = xl - 3
+            elif self.isTargetColour(yuv[yl + 1, xl - 3]):
                 yl = yl + 1
-                xl = xl - 1
+                xl = xl - 3
             else:
                 done = True
         done = False
         while done == False:
-            if yr >= self.height - 1 or xr >= self.width -1:
+            if yr >= self.height - 1 or xr >= self.width - 3:
                 done = True
                 break
-            if self.isTargetColour(yuv[yr, xr + 1]):
-                xr = xr + 1
-            elif self.isTargetColour(yuv[yr - 1, xr + 1]):
+            if self.isTargetColour(yuv[yr, xr + 2]):
+                xr = xr + 3
+            elif self.isTargetColour(yuv[yr - 1, xr + 2]):
                 yr = yr - 1
-                xr = xr + 1
-            elif self.isTargetColour(yuv[yr + 1, xr + 1]):
+                xr = xr + 3
+            elif self.isTargetColour(yuv[yr + 1, xr + 3]):
                 yr = yr + 1
-                xr = xr + 1
+                xr = xr + 3
             else:
                 done = True
         Pl = (xl, yl)
@@ -133,7 +136,7 @@ class TestModule:
             PN = Pr
         return PN
 
-    def process(self, inframe, outframe):
+    def process(self, inframe, outframe, cinframe = 'None'):
         # Keep this code
         if self.on_jevois:
             bgr = inframe.getCvBGR()
@@ -149,14 +152,15 @@ class TestModule:
         h, w, d, = yuv.shape
 
         # Define the lower and upper bounds of the orange color in YUV
-        max_samples = 200
+        max_samples = 100
         sigmaL = 60
+        sigma2 = 60
 
         detectedGates = []
         for i in range(0, max_samples):
             # print(i)
             x0 = randrange(2, w - 3)
-            y0 = randrange(4, h - 3)
+            y0 = randrange(80, h - 80)
             P0 = (x0, y0)
             colour0 = yuv[y0, x0]
             if self.isTargetColour(yuv[y0, x0]):
@@ -168,14 +172,19 @@ class TestModule:
                     # print('P3:',P3)
                     P4 = self.searchLeftRight(P2, yuv)
                     # print('P4:',P4)
-                    if self.dist(P1, P3) > sigmaL and self.dist(P2,
-                                                                P4) > sigmaL:  # change and to or when addding refinement filter
+                    if self.dist(P1, P3) > sigma2 and self.dist(P2,
+                                                                P4) > sigma2:  # change and to or when addding refinement filter
                         detectedGate = [P1, P2, P4, P3]
                         # print('P1:', P1, 'P2:', P2)
                         # print('P3:', P3, 'P4:', P4)
                         detectedGates.append(detectedGate)
                         # Draw the detected gate on the image
-                        cv2.polylines(bgr, [np.array(detectedGate)], isClosed=True, color=(0, 255, 0), thickness=2)
+                        rect = cv2.minAreaRect(np.array(detectedGate))
+                        box = cv2.boxPoints(rect)
+                        box = np.int0(box)
+                        cv2.polylines(bgr, [np.array(detectedGate)], isClosed=True, color=(255, 0, 0), thickness=2)
+
+                        cv2.drawContours(bgr, [box], 0, (0, 255, 0), 2)
                         break
 
         output_image = bgr.copy()
@@ -198,8 +207,6 @@ class TestModule:
         else:
             return output_image, self.parameters
 
-
-
     def processNoUSB(self, inframe, outframe, cinframe):
         # Keep this code
         if self.on_jevois:
@@ -209,7 +216,6 @@ class TestModule:
             bgr = cinframe
         # Add code from here
         # --------------------------------------------------
-
 
         # Convert the image to YUV color space
         yuv = cv2.cvtColor(bgr, cv2.COLOR_BGR2YUV)
@@ -242,8 +248,6 @@ class TestModule:
                 cY = int(M["m01"] / M["m00"])
                 # Draw a dot at the centroid
                 cv2.circle(output_image, (cX, cY), 3, (0, 0, 255), -1)
-
-
 
         # Keep code from here
         # ----------------------------------------------------------
