@@ -230,15 +230,18 @@ class TestModule:
 
                         cv2.drawContours(bgr, [box], 0, (0, 255, 0), 2)
                         break
-        if abs(x - self.last_centroid[0]) < 30 and abs(y - self.last_centroid[1]) < 30:
-            self.last_centroid = (x, y)
 
+        col = (255, 255, 255)
+        if abs(x - self.last_centroid[0]) < 50 and abs(y - self.last_centroid[1]) < 50:
+            self.last_centroid = (x, y)
         else:
-            if self.cooldown == 0:
+            if x==0 and y== 0:
+                col = (255, 255, 0)
+            elif self.cooldown <= 0:
                 self.cooldown == 2
                 self.last_centroid = (x, y)
             self.cooldown += -1
-        cv2.circle(bgr, self.last_centroid, radius=2, color=(255, 255, 255), thickness=-1)
+        cv2.circle(bgr, self.last_centroid, radius=2, color=col, thickness=-1)
         if x < self.width // 2:
             self.parameters[0] = 'go left'
         else:

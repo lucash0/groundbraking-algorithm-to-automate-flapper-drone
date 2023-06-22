@@ -55,10 +55,10 @@ class Daq_tool:
             self.display_images(self.processed_images, self.processed_parameters, 0)
         elif choice == 'v':
             # Display the images as a video with 30fps
-            self.display_images(self.processed_images, self.processed_parameters, int(1000 / 15))
+            self.display_images(self.processed_images, self.processed_parameters, int(1000 / 60))
         elif choice == 's':
             # Save the video
-            self.display_images(self.processed_images, self.processed_parameters, int(1000 / 15), save_video=True)
+            self.display_images(self.processed_images, self.processed_parameters, int(1000 / 60), save_video=True)
         else:
             print("Invalid choice")
 
