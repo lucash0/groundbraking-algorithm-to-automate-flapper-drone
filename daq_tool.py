@@ -30,12 +30,13 @@ class Daq_tool:
 
         # Create an instance of the JeVois class
         JeVois = self.class_object()
-        print(image_files)
         # Process and store each image along with its parameters
         for i, image_file in enumerate(image_files):
             # Load the image
             loaded_image = cv2.imread(image_file)
-
+            print(i, len(image_files))
+            if i == 300:
+                break
             # Process the image using JeVois and retrieve the parameters
             processed_image, parameters = JeVois.process(i + 1, len(image_files), loaded_image)
             # Store the processed image and its parameters

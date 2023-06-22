@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from random import randrange
 import os
-import libjevois as jevois
+# import libjevois as jevois
 
 class TestModule:
     def __init__(self):
@@ -133,7 +133,7 @@ class TestModule:
             PN = Pr
         return PN
 
-    def process(self, inframe, outframe):
+    def process(self, inframe, outframe, cinframe='None'):
         # Keep this code
         if self.on_jevois:
             bgr = inframe.getCvBGR()

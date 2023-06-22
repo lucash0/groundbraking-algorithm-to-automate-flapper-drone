@@ -1,5 +1,5 @@
 # Fortune favours the bold
-from JeVois_code.v02 import Test_v1
+from JeVois_code.vX import TestModule
 from daq_tool import Daq_tool
 
 
@@ -13,6 +13,6 @@ if __name__ == "__main__":
     test_data_folder = 'Test_Data\\Flight\\'
 
 
-    daq = Daq_tool(Test_v1, test_data_folder)
+    daq = Daq_tool(TestModule, test_data_folder)
     daq.run_tool()
 
